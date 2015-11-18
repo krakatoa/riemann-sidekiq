@@ -31,11 +31,11 @@ class Riemann::Tools::Sidekiq
   def tick
     begin
       %w(processed failed enqueued scheduled_size retry_size dead_size).each do |m|
-        metric = @stats.send(m).to_i
+        metric = @stats.send(m)
 
-        state = if m.eql?("enqueued") && m >= @enqueued_critical
+        state = if m.eql?("enqueued") && metric >= @enqueued_critical
           'critical'
-        elsif m.eql?("enqueued") && m >= @enqueued_warning
+        elsif m.eql?("enqueued") && metric >= @enqueued_warning
           'warning'
         else
           'ok'
