@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "riemann-sidekiq"
-  spec.version       = '0.0.5'
+  spec.version       = '0.0.6'
   spec.authors       = ["Fernando Alonso"]
   spec.email         = ["krakatoa1987@gmail.com"]
   spec.summary       = %q{Riemann agent to collect Sidekiq metrics}

@@ -25,13 +25,13 @@ class Riemann::Tools::Sidekiq
 
     @enqueued_warning = opts.fetch(:enqueued_warning)
     @enqueued_critical = opts.fetch(:enqueued_critical)
-    @stats = ::Sidekiq::Stats.new
   end
 
   def tick
+    stats = ::Sidekiq::Stats.new
     begin
       %w(processed failed enqueued scheduled_size retry_size dead_size).each do |m|
-        metric = @stats.send(m)
+        metric = stats.send(m)
 
         state = if m.eql?("enqueued") && metric >= @enqueued_critical
           'critical'
@@ -48,7 +48,7 @@ class Riemann::Tools::Sidekiq
         )
       end
 
-      @stats.queues.each do |name, metric|
+      stats.queues.each do |name, metric|
         report(
           service: "sidekiq queues #{name}",
           metric: metric
