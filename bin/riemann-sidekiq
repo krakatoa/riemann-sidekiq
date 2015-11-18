@@ -9,12 +9,13 @@ require 'riemann/tools'
 class Riemann::Tools::Sidekiq
   include Riemann::Tools
 
-  opt :sidekiq_url, "Sidekiq URL"
-  opt :sidekiq_namespace, "Sidekiq namespace"
+  opt :sidekiq_url, "Sidekiq URL", :type => String
+  opt :sidekiq_namespace, "Sidekiq namespace", :type => String
   opt :enqueued_warning, "Enqueued size warning threshold",   :type => Integer, :default => 100
   opt :enqueued_critical, "Enqueued size critical threshold", :type => Integer, :default => 500
 
   def initialize
+    puts "SIDEKIQ_URL: #{opts[:sidekiq_url]}"
     ::Sidekiq.configure_client do |config|
       config.redis = { url: opts[:sidekiq_url], namespace: opts[:sidekiq_namespace] }
     end
