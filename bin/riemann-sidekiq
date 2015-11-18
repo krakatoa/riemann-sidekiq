@@ -15,7 +15,6 @@ class Riemann::Tools::Sidekiq
   opt :enqueued_critical, "Enqueued size critical threshold", :type => Integer, :default => 500
 
   def initialize
-    puts "SIDEKIQ_URL: #{opts[:sidekiq_url]}"
     ::Sidekiq.configure_client do |config|
       config.redis = { url: opts[:sidekiq_url], namespace: opts[:sidekiq_namespace] }
     end
@@ -32,7 +31,7 @@ class Riemann::Tools::Sidekiq
   def tick
     begin
       %w(processed failed enqueued scheduled_size retry_size dead_size).each do |m|
-        metric = @stats.send(m)
+        metric = @stats.send(m).to_i
 
         state = if m.eql?("enqueued") && m >= @enqueued_critical
           'critical'
