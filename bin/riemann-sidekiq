@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+# Riemann agent to collect Rpush metrics
+
+require 'sidekiq'
+require 'sidekiq/api'
+require 'riemann/tools'
+
+class Riemann::Tools::Sidekiq
+  include Riemann::Tools
+
+  opt :sidekiq_url, "Sidekiq URL"
+  opt :sidekiq_namespace, "Sidekiq namespace"
+  opt :enqueued_warning, "Enqueued size warning threshold",   :type => Integer, :default => 100
+  opt :enqueued_critical, "Enqueued size critical threshold", :type => Integer, :default => 500
+
+  def initialize
+    ::Sidekiq.configure_client do |config|
+      config.redis = { url: opts[:sidekiq_url], namespace: opts[:sidekiq_namespace] }
+    end
+
+    ::Sidekiq.configure_server do |config|
+      config.redis = { url: opts[:sidekiq_url], namespace: opts[:sidekiq_namespace] }
+    end
+
+    @enqueued_warning = opts.fetch(:enqueued_warning)
+    @enqueued_critical = opts.fetch(:enqueued_critical)
+    @stats = ::Sidekiq::Stats.new
+  end
+
+  def tick
+    begin
+      %w(processed failed enqueued scheduled_size retry_size dead_size).each do |m|
+        metric = @stats.send(m)
+
+        state = if m.eql?("enqueued") && m >= @enqueued_critical
+          'critical'
+        elsif m.eql?("enqueued") && m >= @enqueued_warning
+          'warning'
+        else
+          'ok'
+        end
+
+        report(
+          service: "sidekiq #{m}",
+          metric: metric,
+          state: state
+        )
+      end
+
+      @stats.queues.each do |name, metric|
+        report(
+          service: "sidekiq queues #{name}",
+          metric: metric
+        )
+      end
+    rescue => e
+      puts e
+    end
+  end
+end
+
+Riemann::Tools::Sidekiq.run
