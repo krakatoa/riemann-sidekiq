@@ -30,7 +30,7 @@ class Riemann::Tools::Sidekiq
   def tick
     stats = ::Sidekiq::Stats.new
     begin
-      %w(processed failed enqueued scheduled_size retry_size dead_size).each do |m|
+      %w(processed failed workers_size enqueued scheduled_size retry_size dead_size).each do |m|
         metric = stats.send(m)
 
         state = if m.eql?("enqueued") && metric >= @enqueued_critical
