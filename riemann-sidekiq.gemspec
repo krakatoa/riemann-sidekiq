@@ -19,6 +19,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "riemann-tools", "~> 0.2.6"
   spec.add_runtime_dependency 'redis', '~> 3.2'
-  spec.add_runtime_dependency 'sidekiq', '~> 3.3'
+  spec.add_runtime_dependency 'sidekiq', '>= 3.3'
   spec.add_development_dependency "bundler", "~> 1.6"
 end
